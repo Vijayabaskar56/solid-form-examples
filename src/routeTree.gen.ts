@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoWaitlistFormRouteImport } from './routes/demo.waitlist-form'
-import { Route as DemoFormRouteImport } from './routes/demo.form'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,39 +22,30 @@ const DemoWaitlistFormRoute = DemoWaitlistFormRouteImport.update({
   path: '/demo/waitlist-form',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoFormRoute = DemoFormRouteImport.update({
-  id: '/demo/form',
-  path: '/demo/form',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/demo/form': typeof DemoFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/demo/form': typeof DemoFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/demo/form': typeof DemoFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo/form' | '/demo/waitlist-form'
+  fullPaths: '/' | '/demo/waitlist-form'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/form' | '/demo/waitlist-form'
-  id: '__root__' | '/' | '/demo/form' | '/demo/waitlist-form'
+  to: '/' | '/demo/waitlist-form'
+  id: '__root__' | '/' | '/demo/waitlist-form'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DemoFormRoute: typeof DemoFormRoute
   DemoWaitlistFormRoute: typeof DemoWaitlistFormRoute
 }
 
@@ -75,19 +65,11 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof DemoWaitlistFormRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/form': {
-      id: '/demo/form'
-      path: '/demo/form'
-      fullPath: '/demo/form'
-      preLoaderRoute: typeof DemoFormRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DemoFormRoute: DemoFormRoute,
   DemoWaitlistFormRoute: DemoWaitlistFormRoute,
 }
 export const routeTree = rootRouteImport

@@ -1,23 +1,23 @@
-import { createFileRoute } from '@tanstack/solid-router'
-import { revalidateLogic } from '@tanstack/form-core'
-import { toast } from 'sonner'
-import * as z from 'zod'
+import { revalidateLogic } from "@tanstack/solid-form";
+import { createFileRoute } from "@tanstack/solid-router";
+import { toast } from "sonner";
+import * as z from "zod";
 
-import { TextFieldInput } from '@/components/ui/input'
-import { useAppForm } from '@/components/ui/tanstack-form'
+import { Input } from "@/components/ui/input";
+import { useAppForm } from "@/components/ui/tanstack-form";
 
 const waitlistFormSchema = z.object({
 	email: z.string().email(),
-})
+});
 
-export const Route = createFileRoute('/demo/waitlist-form')({
-  component: RouteComponent,
-})
+export const Route = createFileRoute("/demo/waitlist-form")({
+	component: RouteComponent,
+});
 
 function RouteComponent() {
-	const waitlistForm = useAppForm(() => ({
+	const waitlistForm = useAppForm(()=> ({
 		defaultValues: {
-			email: '',
+			email: "",
 		} as z.input<typeof waitlistFormSchema>,
 		validationLogic: revalidateLogic(),
 		validators: {
@@ -25,26 +25,26 @@ function RouteComponent() {
 			onDynamicAsyncDebounceMs: 300,
 		},
 		onSubmit: ({}) => {
-			toast.success('success')
+			toast.success("Successfully joined waitlist!");
 		},
-		onSubmitInvalid({ formApi }: any) {
-			const errorMap = formApi.state.errorMap['onDynamic']!
+		onSubmitInvalid({ formApi }) {
+			const errorMap = formApi.state.errorMap["onDynamic"]!;
 			const inputs = Array.from(
-				document.querySelectorAll('#previewForm input'),
-			) as HTMLInputElement[]
-			let firstInput: HTMLInputElement | undefined
+				document.querySelectorAll("input"),
+			) as HTMLInputElement[];
+			let firstInput: HTMLInputElement | undefined;
 			for (const input of inputs) {
 				if (errorMap[input.name]) {
-					firstInput = input
-					break
+					firstInput = input;
+					break;
 				}
 			}
-			firstInput?.focus()
+			firstInput?.focus();
 		},
-	}))
+	}));
 
 	return (
-		<div class="p-8">
+		<div class="p-8 max-w-md mx-auto">
 			<waitlistForm.AppForm>
 				<waitlistForm.Form>
 					<waitlistForm.FieldLegend class="text-3xl font-bold">
@@ -54,21 +54,24 @@ function RouteComponent() {
 						Join our waitlist to get early access
 					</waitlistForm.FieldDescription>
 					<waitlistForm.FieldSeparator />
-					<waitlistForm.AppField name={'email'}>
+					<waitlistForm.AppField name={"email"}>
 						{(field) => (
 							<field.FieldSet class="w-full">
 								<field.Field>
-									<field.FieldLabel for={'email'}>
+									<field.FieldLabel for={"email"}>
 										Your Email *
 									</field.FieldLabel>
-									<TextFieldInput
-										name={'email'}
+									<Input
+										name={"email"}
 										placeholder="Enter your Email"
 										type="email"
-										value={(field().state.value as string | undefined) ?? ''}
+										value={(field().state.value as string | undefined) ?? ""}
 										onBlur={field().handleBlur}
-										onChange={(e: any) => field().handleChange(e.target.value)}
-										aria-invalid={!!field().state.meta.errors.length && field().state.meta.isTouched}
+										onInput={(e) => field().handleChange(e.currentTarget.value)}
+										aria-invalid={
+											!!field().state.meta.errors.length &&
+											field().state.meta.isTouched
+										}
 									/>
 								</field.Field>
 
@@ -82,5 +85,5 @@ function RouteComponent() {
 				</waitlistForm.Form>
 			</waitlistForm.AppForm>
 		</div>
-	)
+	);
 }
