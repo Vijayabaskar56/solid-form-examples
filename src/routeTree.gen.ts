@@ -11,6 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoWaitlistFormRouteImport } from './routes/demo.waitlist-form'
+import { Route as DemoSignUpFormRouteImport } from './routes/demo.sign-up-form'
+import { Route as DemoPurchaseOrderFormRouteImport } from './routes/demo.purchase-order-form'
+import { Route as DemoFeedbackFormRouteImport } from './routes/demo.feedback-form'
+import { Route as DemoContactFormRouteImport } from './routes/demo.contact-form'
+import { Route as DemoBookingFormRouteImport } from './routes/demo.booking-form'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,30 +27,97 @@ const DemoWaitlistFormRoute = DemoWaitlistFormRouteImport.update({
   path: '/demo/waitlist-form',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DemoSignUpFormRoute = DemoSignUpFormRouteImport.update({
+  id: '/demo/sign-up-form',
+  path: '/demo/sign-up-form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoPurchaseOrderFormRoute = DemoPurchaseOrderFormRouteImport.update({
+  id: '/demo/purchase-order-form',
+  path: '/demo/purchase-order-form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoFeedbackFormRoute = DemoFeedbackFormRouteImport.update({
+  id: '/demo/feedback-form',
+  path: '/demo/feedback-form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoContactFormRoute = DemoContactFormRouteImport.update({
+  id: '/demo/contact-form',
+  path: '/demo/contact-form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoBookingFormRoute = DemoBookingFormRouteImport.update({
+  id: '/demo/booking-form',
+  path: '/demo/booking-form',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo/booking-form': typeof DemoBookingFormRoute
+  '/demo/contact-form': typeof DemoContactFormRoute
+  '/demo/feedback-form': typeof DemoFeedbackFormRoute
+  '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
+  '/demo/sign-up-form': typeof DemoSignUpFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo/booking-form': typeof DemoBookingFormRoute
+  '/demo/contact-form': typeof DemoContactFormRoute
+  '/demo/feedback-form': typeof DemoFeedbackFormRoute
+  '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
+  '/demo/sign-up-form': typeof DemoSignUpFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/demo/booking-form': typeof DemoBookingFormRoute
+  '/demo/contact-form': typeof DemoContactFormRoute
+  '/demo/feedback-form': typeof DemoFeedbackFormRoute
+  '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
+  '/demo/sign-up-form': typeof DemoSignUpFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo/waitlist-form'
+  fullPaths:
+    | '/'
+    | '/demo/booking-form'
+    | '/demo/contact-form'
+    | '/demo/feedback-form'
+    | '/demo/purchase-order-form'
+    | '/demo/sign-up-form'
+    | '/demo/waitlist-form'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/waitlist-form'
-  id: '__root__' | '/' | '/demo/waitlist-form'
+  to:
+    | '/'
+    | '/demo/booking-form'
+    | '/demo/contact-form'
+    | '/demo/feedback-form'
+    | '/demo/purchase-order-form'
+    | '/demo/sign-up-form'
+    | '/demo/waitlist-form'
+  id:
+    | '__root__'
+    | '/'
+    | '/demo/booking-form'
+    | '/demo/contact-form'
+    | '/demo/feedback-form'
+    | '/demo/purchase-order-form'
+    | '/demo/sign-up-form'
+    | '/demo/waitlist-form'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoBookingFormRoute: typeof DemoBookingFormRoute
+  DemoContactFormRoute: typeof DemoContactFormRoute
+  DemoFeedbackFormRoute: typeof DemoFeedbackFormRoute
+  DemoPurchaseOrderFormRoute: typeof DemoPurchaseOrderFormRoute
+  DemoSignUpFormRoute: typeof DemoSignUpFormRoute
   DemoWaitlistFormRoute: typeof DemoWaitlistFormRoute
 }
 
@@ -65,11 +137,51 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof DemoWaitlistFormRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/demo/sign-up-form': {
+      id: '/demo/sign-up-form'
+      path: '/demo/sign-up-form'
+      fullPath: '/demo/sign-up-form'
+      preLoaderRoute: typeof DemoSignUpFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/purchase-order-form': {
+      id: '/demo/purchase-order-form'
+      path: '/demo/purchase-order-form'
+      fullPath: '/demo/purchase-order-form'
+      preLoaderRoute: typeof DemoPurchaseOrderFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/feedback-form': {
+      id: '/demo/feedback-form'
+      path: '/demo/feedback-form'
+      fullPath: '/demo/feedback-form'
+      preLoaderRoute: typeof DemoFeedbackFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/contact-form': {
+      id: '/demo/contact-form'
+      path: '/demo/contact-form'
+      fullPath: '/demo/contact-form'
+      preLoaderRoute: typeof DemoContactFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/booking-form': {
+      id: '/demo/booking-form'
+      path: '/demo/booking-form'
+      fullPath: '/demo/booking-form'
+      preLoaderRoute: typeof DemoBookingFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoBookingFormRoute: DemoBookingFormRoute,
+  DemoContactFormRoute: DemoContactFormRoute,
+  DemoFeedbackFormRoute: DemoFeedbackFormRoute,
+  DemoPurchaseOrderFormRoute: DemoPurchaseOrderFormRoute,
+  DemoSignUpFormRoute: DemoSignUpFormRoute,
   DemoWaitlistFormRoute: DemoWaitlistFormRoute,
 }
 export const routeTree = rootRouteImport
