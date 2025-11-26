@@ -1,22 +1,42 @@
-import type { ComponentProps } from "solid-js";
+import { Popover as PopoverPrimitive } from "@kobalte/core/popover";
+import { Check, ChevronUp, X } from "lucide-solid";
+import type { ComponentProps, JSX, ValidComponent } from "solid-js";
 import {
 	createContext,
+	createEffect,
 	createMemo,
 	createSignal,
 	For,
+	Show,
 	splitProps,
 	useContext,
 } from "solid-js";
+import { Badge } from "@/components/ui/badge";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	type CommandItemProps,
+	CommandList,
+	CommandSeparator,
+} from "@/components/ui/command";
 import {
 	Popover,
-	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cx } from "@/utils/utils";
 
 export interface MultiSelectOptionItem {
 	value: string;
-	label?: string;
+	label?: JSX.Element;
 }
 
 interface MultiSelectContextValue {
@@ -24,85 +44,108 @@ interface MultiSelectContextValue {
 	open: () => boolean;
 	onSelect(value: string, item: MultiSelectOptionItem): void;
 	onDeselect(value: string, item: MultiSelectOptionItem): void;
+	onSearch?: (keyword: string | undefined) => void;
+	filter?: boolean | ((keyword: string, current: string) => boolean);
 	disabled?: boolean;
 	maxCount?: number;
 	itemCache: Map<string, MultiSelectOptionItem>;
 }
 
-const MultiSelectContext = createContext<MultiSelectContextValue | undefined>(
-	undefined,
-);
+const MultiSelectContext = createContext<MultiSelectContextValue>();
 
 const useMultiSelect = () => {
 	const context = useContext(MultiSelectContext);
 	if (!context) {
-		throw new Error("useMultiSelect must be used within MultiSelectProvider");
+		throw new Error("useMultiSelect must be used within MultiSelect");
 	}
 	return context;
 };
 
-type MultiSelectProps = ComponentProps<"div"> & {
+type MultiSelectProps = ComponentProps<typeof Popover> & {
 	value?: string[];
-	onValueChange?(value: string[]): void;
-	onSelect?(value: string, item: MultiSelectOptionItem): void;
-	onDeselect?(value: string, item: MultiSelectOptionItem): void;
+	onValueChange?: (value: string[], items: MultiSelectOptionItem[]) => void;
+	onSelect?: (value: string, item: MultiSelectOptionItem) => void;
+	onDeselect?: (value: string, item: MultiSelectOptionItem) => void;
 	defaultValue?: string[];
+	onSearch?: (keyword: string | undefined) => void;
+	filter?: boolean | ((keyword: string, current: string) => boolean);
 	disabled?: boolean;
 	maxCount?: number;
-	children?: any;
-	placeholder?: string;
+	children?: JSX.Element;
 };
 
-const MultiSelect = (props: MultiSelectProps) => {
-	const [, rest] = splitProps(props, [
+export const MultiSelect = (props: MultiSelectProps) => {
+	const [local, rest] = splitProps(props, [
 		"value",
 		"onValueChange",
 		"onDeselect",
 		"onSelect",
 		"defaultValue",
+		"open",
+		"onOpenChange",
+		"defaultOpen",
+		"onSearch",
+		"filter",
 		"disabled",
 		"maxCount",
 		"children",
-		"placeholder",
 	]);
 
 	const itemCache = new Map<string, MultiSelectOptionItem>();
-	const [open, setOpen] = createSignal(false);
 
-	const [value, setValue] = createSignal(
-		props.value || props.defaultValue || [],
+	const [internalValue, setInternalValue] = createSignal<string[]>(
+		local.defaultValue || [],
+	);
+	const [internalOpen, setInternalOpen] = createSignal(
+		local.defaultOpen || false,
 	);
 
-	const handleSelect = (selectedValue: string, item: MultiSelectOptionItem) => {
-		const currentValue = value();
-		if (currentValue?.includes(selectedValue)) {
+	const value = createMemo(() => local.value ?? internalValue());
+	const open = createMemo(() => local.open ?? internalOpen());
+
+	const handleValueChange = (newValue: string[]) => {
+		setInternalValue(newValue);
+		if (local.onValueChange) {
+			const items = newValue
+				.map((v) => itemCache.get(v))
+				.filter((item): item is MultiSelectOptionItem => item !== undefined);
+			local.onValueChange(newValue, items);
+		}
+	};
+
+	const handleOpenChange = (isOpen: boolean) => {
+		setInternalOpen(isOpen);
+		local.onOpenChange?.(isOpen);
+	};
+
+	const handleSelect = (valueToSelect: string, item: MultiSelectOptionItem) => {
+		const current = value();
+		if (current.includes(valueToSelect)) {
 			return;
 		}
-		props.onSelect?.(selectedValue, item);
-		const newValue = [...(currentValue || []), selectedValue];
-		setValue(newValue);
-		props.onValueChange?.(newValue);
+		local.onSelect?.(valueToSelect, item);
+		handleValueChange([...current, valueToSelect]);
 	};
 
 	const handleDeselect = (
-		selectedValue: string,
+		valueToDeselect: string,
 		item: MultiSelectOptionItem,
 	) => {
-		const currentValue = value();
-		if (!currentValue || !currentValue.includes(selectedValue)) {
+		const current = value();
+		if (!current.includes(valueToDeselect)) {
 			return;
 		}
-		props.onDeselect?.(selectedValue, item);
-		const newValue = currentValue.filter((v) => v !== selectedValue);
-		setValue(newValue);
-		props.onValueChange?.(newValue);
+		local.onDeselect?.(valueToDeselect, item);
+		handleValueChange(current.filter((v) => v !== valueToDeselect));
 	};
 
 	const contextValue: MultiSelectContextValue = {
-		value: () => value() || [],
-		open: () => open(),
-		disabled: props.disabled,
-		maxCount: props.maxCount,
+		value,
+		open,
+		onSearch: local.onSearch,
+		filter: local.filter,
+		disabled: local.disabled,
+		maxCount: local.maxCount,
 		onSelect: handleSelect,
 		onDeselect: handleDeselect,
 		itemCache,
@@ -110,260 +153,365 @@ const MultiSelect = (props: MultiSelectProps) => {
 
 	return (
 		<MultiSelectContext.Provider value={contextValue}>
-			<Popover open={open()} onOpenChange={setOpen}>
-				<PopoverTrigger>
-					<div
-						aria-disabled={props.disabled}
-						data-disabled={props.disabled}
-						class={cx(
-							"flex min-h-10 w-full items-center justify-between whitespace-nowrap rounded-sm border border-input border-dashed bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background focus:outline-none focus:ring-1 focus:ring-ring",
-							props.disabled ? "cursor-not-allowed opacity-50" : "cursor-text",
-							rest.class,
-						)}
-						onClick={
-							props.disabled
-								? (e) => {
-										e.preventDefault();
-										e.stopPropagation();
-									}
-								: undefined
-						}
-						tabIndex={props.disabled ? -1 : 0}
-						role="button"
-					>
-						<MultiSelectValue placeholder={props.placeholder} maxDisplay={3} />
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="size-4 opacity-50"
-							viewBox="0 0 24 24"
-							fill="none"
-						>
-							<path
-								stroke="currentColor"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="m6 9l6 6l6-6"
-							/>
-						</svg>
-					</div>
-				</PopoverTrigger>
-				<PopoverContent class="w-full p-0">
-					<div
-						class={cx(
-							"z-50 w-full rounded-sm border border-dashed bg-background p-0 text-foreground shadow-md",
-							rest.class,
-						)}
-					>
-						<div class="py-1 px-0 max-h-96 overflow-y-auto">
-							<MultiSelectOptions options={props.children || []} />
-						</div>
-					</div>
-				</PopoverContent>
+			<Popover
+				open={open()}
+				onOpenChange={handleOpenChange}
+				{...rest}
+			>
+				{local.children}
 			</Popover>
 		</MultiSelectContext.Provider>
 	);
 };
 
-MultiSelect.displayName = "MultiSelect";
+type MultiSelectTriggerProps<T extends ValidComponent = "div"> = ComponentProps<T>;
 
-const MultiSelectValue = (props: {
-	placeholder?: string;
-	maxDisplay?: number;
-}) => {
-	const { value, itemCache, onDeselect } = useMultiSelect();
-	const [firstRendered, setFirstRendered] = createSignal(false);
+const preventClick = (e: MouseEvent | TouchEvent) => {
+	e.preventDefault();
+	e.stopPropagation();
+};
 
-	const currentValue = value();
-	const renderRemain =
-		props.maxDisplay && currentValue.length > props.maxDisplay
-			? currentValue.length - props.maxDisplay
-			: 0;
-	const renderItems = renderRemain
-		? currentValue.slice(0, props.maxDisplay)
-		: currentValue;
-
-	// Simulate layout effect
-	setTimeout(() => setFirstRendered(true), 0);
-
-	if (!currentValue.length || !firstRendered()) {
-		return (
-			<span class="pointer-events-none text-muted-foreground">
-				{props.placeholder}
-			</span>
-		);
-	}
+export const MultiSelectTrigger = <T extends ValidComponent = "div">(
+	props: MultiSelectTriggerProps<T>,
+) => {
+	const [, rest] = splitProps(props, [
+		"class",
+		"children",
+	] as const);
+	const { disabled } = useMultiSelect();
 
 	return (
-		<div class="flex flex-1 overflow-x-hidden flex-wrap items-center gap-1.5">
-			<For each={renderItems}>
-				{(itemValue) => {
-					const item = itemCache.get(itemValue);
-					const content = item?.label || itemValue;
-					return (
-						<div
-							class="inline-flex items-center gap-1 rounded-full border bg-background px-2 py-0.5 text-sm group/multi-select-badge cursor-pointer"
-							onClick={(e) => {
-								e.preventDefault();
-								e.stopPropagation();
-								onDeselect(itemValue, item!);
-							}}
-						>
-							<span>{content}</span>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="size-3 ml-1.5 text-muted-foreground group-hover/multi-select-badge:text-foreground"
-								viewBox="0 0 24 24"
-								fill="none"
-							>
-								<path
-									stroke="currentColor"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M18 6L6 18M6 6l12 12"
-								/>
-							</svg>
-						</div>
-					);
-				}}
-			</For>
-			{renderRemain ? (
-				<span class="text-muted-foreground text-xs leading-4 py-0.5">
-					+{renderRemain}
-				</span>
-			) : null}
-		</div>
+		<PopoverTrigger
+			as={(triggerProps: Record<string, unknown>) => (
+				<button
+					type="button"
+					aria-disabled={disabled}
+					data-disabled={disabled}
+					class={cx(
+						"flex min-h-10 size-full items-center justify-between whitespace-nowrap rounded-sm border border-input border-dashed bg-transparent px-3 py-2 shadow-xs ring-offset-background focus:outline-hidden focus:ring-1 focus:ring-ring [&>span]:line-clamp-1 text-base",
+						disabled ? "cursor-not-allowed opacity-50" : "cursor-text",
+						props.class,
+					)}
+					onClick={disabled ? preventClick : undefined}
+					onTouchStart={disabled ? preventClick : undefined}
+					onKeyDown={
+						disabled
+							? (e) => {
+									e.preventDefault();
+									e.stopPropagation();
+								}
+							: undefined
+					}
+					tabIndex={disabled ? -1 : 0}
+					disabled={disabled}
+					{...triggerProps}
+					{...rest}
+				>
+					{props.children}
+					<ChevronUp class="size-4 opacity-50" />
+				</button>
+			)}
+		/>
 	);
 };
 
-const MultiSelectList = (props: { children?: any }) => {
-	return <div class="py-1 px-0 max-h-96 overflow-y-auto">{props.children}</div>;
+type MultiSelectValueProps<T extends ValidComponent = "div"> = ComponentProps<T> & {
+	placeholder?: string;
+	maxDisplay?: number;
+	maxItemLength?: number;
 };
 
-const MultiSelectItem = (
-	props: MultiSelectOptionItem & { children?: any; class?: string },
+export const MultiSelectValue = <T extends ValidComponent = "div">(
+	props: MultiSelectValueProps<T>,
 ) => {
+	const [, rest] = splitProps(props as MultiSelectValueProps, [
+		"class",
+		"placeholder",
+		"maxDisplay",
+		"maxItemLength",
+		"children",
+	] as const);
+	const { value, itemCache, onDeselect } = useMultiSelect();
+
+	const renderRemain = createMemo(() => {
+		const val = value();
+		return props.maxDisplay && val.length > props.maxDisplay
+			? val.length - props.maxDisplay
+			: 0;
+	});
+
+	const renderItems = createMemo(() => {
+		const val = value();
+		const remain = renderRemain();
+		return remain ? val.slice(0, props.maxDisplay) : val;
+	});
+
+	return (
+		<Show
+			when={value().length > 0}
+			fallback={
+				<span class="pointer-events-none text-muted-foreground">
+					{props.placeholder}
+				</span>
+			}
+		>
+			<TooltipProvider delayDuration={300}>
+				<div
+					class={cx(
+						"flex flex-1 overflow-x-hidden flex-wrap items-center gap-1.5",
+						props.class,
+					)}
+					{...rest}
+				>
+					<For each={renderItems()}>
+						{(val) => {
+							const item = itemCache.get(val);
+							const content = item?.label || val;
+							const contentStr =
+								typeof content === "string" ? content : String(content);
+							const child =
+								props.maxItemLength &&
+								contentStr.length > props.maxItemLength
+									? `${contentStr.slice(0, props.maxItemLength)}...`
+									: content;
+
+							const badge = (
+								<Badge
+									variant="outline"
+									class="pr-1.5 group/multi-select-badge cursor-pointer rounded-full py-0.5"
+									onClick={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										if (item) {
+											onDeselect(val, item);
+										}
+									}}
+								>
+									<span>{child}</span>
+									<X class="size-3 ml-1.5 text-muted-foreground group-hover/multi-select-badge:text-foreground" />
+								</Badge>
+							);
+
+							return (
+								<Show
+									when={contentStr !== String(child)}
+									fallback={badge}
+								>
+									<Tooltip>
+										<TooltipTrigger class="inline-flex">{badge}</TooltipTrigger>
+										<TooltipContent class="z-51">
+											{contentStr}
+										</TooltipContent>
+									</Tooltip>
+								</Show>
+							);
+						}}
+					</For>
+					<Show when={renderRemain() > 0}>
+						<span class="text-muted-foreground text-xs leading-4 py-.5">
+							+{renderRemain()}
+						</span>
+					</Show>
+				</div>
+			</TooltipProvider>
+		</Show>
+	);
+};
+
+export const MultiSelectSearch = <T extends ValidComponent = "input">(
+	props: ComponentProps<T>,
+) => {
+	const [, rest] = splitProps(props, [
+		"class",
+		"onInput",
+	] as const);
+	const { onSearch } = useMultiSelect();
+
+	return (
+		<CommandInput
+			{...rest}
+			class={props.class}
+			onValueChange={onSearch}
+		/>
+	);
+};
+
+export const MultiSelectList = <T extends ValidComponent = "div">(
+	props: ComponentProps<T>,
+) => {
+	const [, rest] = splitProps(props, ["class"] as const);
+
+	return (
+		<CommandList
+			class={cx("py-1 px-0 max-h-[unset]", props.class)}
+			{...rest}
+		/>
+	);
+};
+
+type MultiSelectContentProps<T extends ValidComponent = "div"> = ComponentProps<T>;
+
+export const MultiSelectContent = <T extends ValidComponent = "div">(
+	props: MultiSelectContentProps<T>,
+) => {
+	const [local, rest] = splitProps(props as MultiSelectContentProps, [
+		"class",
+		"children",
+	] as const);
+	const context = useMultiSelect();
+
+	return (
+		<PopoverPrimitive.Portal>
+			<PopoverPrimitive.Content
+				data-slot="popover-content"
+				align="start"
+				sideOffset={4}
+				onOpenAutoFocus={(e: Event) => {
+					// Prevent auto-focus on open
+					e.preventDefault();
+				}}
+				onCloseAutoFocus={(e: Event) => {
+					// Prevent auto-focus when closing
+					e.preventDefault();
+				}}
+				onFocusOutside={(e: Event) => {
+					// ALWAYS prevent focus outside from closing
+					// This is the key - focus changing shouldn't close the popover
+					e.preventDefault();
+				}}
+				class={cx(
+					"z-50 w-full rounded-sm border border-dashed bg-popover p-0 text-popover-foreground shadow-md outline-hidden data-expanded:animate-in data-closed:animate-out data-closed:fade-out-0 data-expanded:fade-in-0 data-closed:zoom-out-95 data-expanded:zoom-in-95",
+					local.class,
+				)}
+				{...rest}
+			>
+				<Command
+					class={cx("px-1 max-h-96 w-full")}
+					shouldFilter={!context.onSearch}
+				>
+					{local.children}
+				</Command>
+			</PopoverPrimitive.Content>
+		</PopoverPrimitive.Portal>
+	);
+};
+
+type MultiSelectItemProps<T extends ValidComponent = "div"> = ComponentProps<T> &
+	Partial<MultiSelectOptionItem> & {
+		onSelect?: (value: string, item: MultiSelectOptionItem) => void;
+		onDeselect?: (value: string, item: MultiSelectOptionItem) => void;
+		disabled?: boolean;
+	};
+
+export const MultiSelectItem = <T extends ValidComponent = "div">(
+	props: MultiSelectItemProps<T>,
+) => {
+	const [local] = splitProps(props as MultiSelectItemProps, [
+		"class",
+		"value",
+		"onSelect",
+		"onDeselect",
+		"children",
+		"label",
+		"disabled",
+	] as const);
+
 	const {
-		value: getContextValue,
-		onSelect,
-		onDeselect,
-		itemCache,
+		value: contextValue,
 		maxCount,
-		disabled: disabledProp,
+		onSelect: contextOnSelect,
+		onDeselect: contextOnDeselect,
+		itemCache,
 	} = useMultiSelect();
 
-	const contextValue = getContextValue();
-
 	const item = createMemo(() => {
-		return props.value
-			? {
-					value: props.value,
-					label:
-						props.label ||
-						(typeof props.children === "string" ? props.children : undefined),
-				}
-			: undefined;
-	}, [props.value, props.label, props.children]);
+		if (!local.value) return undefined;
+		return {
+			value: local.value,
+			label: local.label || (typeof local.children === "string" ? local.children : undefined),
+		};
+	});
 
-	const selected = Boolean(props.value && contextValue.includes(props.value));
+	const selected = createMemo(() => {
+		const val = local.value;
+		return val ? contextValue().includes(val) : false;
+	});
 
-	const disabled = Boolean(
-		disabledProp || (!selected && maxCount && contextValue.length >= maxCount),
-	);
+	createEffect(() => {
+		const val = local.value;
+		const itm = item();
+		if (val && itm) {
+			itemCache.set(val, itm);
+		}
+	});
 
-	const handleClick = () => {
-		if (selected) {
-			onDeselect?.(props.value!, item()!);
+	const disabled = createMemo(() => {
+		return (
+			local.disabled ||
+			(!selected() && !!maxCount && contextValue().length >= maxCount)
+		);
+	});
+
+	const handleClick: (e?: MouseEvent) => void = (e?: MouseEvent) => {
+		if (disabled() || !local.value) return;
+		const itm = item();
+		if (!itm) return;
+
+		// Prevent event from bubbling up to close the popover
+		if (e) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+
+		if (selected()) {
+			local.onDeselect?.(local.value, itm);
+			contextOnDeselect(local.value, itm);
 		} else {
-			itemCache.set(props.value!, item()!);
-			onSelect?.(props.value!, item()!);
+			itemCache.set(local.value, itm);
+			local.onSelect?.(local.value, itm);
+			contextOnSelect(local.value, itm);
 		}
 	};
 
 	return (
-		<div
+		<CommandItem
+			value={local.value}
 			class={cx(
-				"relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent focus:bg-accent",
-				disabled && "text-muted-foreground cursor-not-allowed",
-				props.class,
+				disabled() && "text-muted-foreground cursor-not-allowed",
+				local.class,
 			)}
-			onClick={!disabled ? handleClick : undefined}
-			role="option"
-			aria-selected={selected}
+			disabled={disabled()}
+			onSelect={handleClick as CommandItemProps["onSelect"]}
 		>
 			<span class="mr-2 whitespace-nowrap overflow-hidden text-ellipsis">
-				{props.children || props.label || props.value}
+				{local.children || local.label || local.value}
 			</span>
-			{selected ? (
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					class="h-4 w-4 ml-auto shrink-0"
-					viewBox="0 0 24 24"
-					fill="none"
-				>
-					<path
-						stroke="currentColor"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M20 6L9 17l-5-5"
-					/>
-				</svg>
-			) : null}
-		</div>
+			<Show when={selected()}>
+				<Check class="h-4 w-4 ml-auto shrink-0" />
+			</Show>
+		</CommandItem>
 	);
 };
 
-const MultiSelectGroup = (props: {
-	heading?: string;
-	value?: string;
-	children?: any;
-}) => {
-	return (
-		<div>
-			{props.heading && (
-				<div class="px-2 py-1.5 text-sm font-semibold text-muted-foreground">
-					{props.heading}
-				</div>
-			)}
-			{props.children}
-		</div>
-	);
+export const MultiSelectGroup = <T extends ValidComponent = "div">(
+	props: ComponentProps<typeof CommandGroup<T>>,
+) => {
+	return <CommandGroup {...props} />;
 };
 
-const MultiSelectSeparator = () => {
-	return <div class="my-1 h-px bg-muted" />;
+export const MultiSelectSeparator = <T extends ValidComponent = "div">(
+	props: ComponentProps<T>,
+) => {
+	return <CommandSeparator {...props} />;
 };
 
-const MultiSelectOptions = (props: { options: MultiSelectOptionItem[] }) => {
+export const MultiSelectEmpty = <T extends ValidComponent = "div">(
+	props: ComponentProps<T> & { children?: JSX.Element },
+) => {
 	return (
-		<>
-			<For each={props.options}>
-				{(option, index) => {
-					if ("type" in option) {
-						if (option.type === "separator") {
-							return <MultiSelectSeparator />;
-						}
-						return null;
-					}
-
-					if ("children" in option) {
-						const groupOption = option as MultiSelectOptionGroup;
-						return (
-							<MultiSelectGroup
-								value={groupOption.value || String(index)}
-								heading={groupOption.heading}
-							>
-								<MultiSelectOptions options={groupOption.children} />
-							</MultiSelectGroup>
-						);
-					}
-
-					return <MultiSelectItem {...option} />;
-				}}
-			</For>
-		</>
+		<CommandEmpty {...props}>
+			{props.children || "No Content"}
+		</CommandEmpty>
 	);
 };
 
@@ -372,22 +520,43 @@ export interface MultiSelectOptionSeparator {
 }
 
 export interface MultiSelectOptionGroup {
-	heading?: string;
+	heading?: JSX.Element;
 	value?: string;
-	children: MultiSelectOptionItem[];
+	children: MultiSelectOption[];
 }
 
 export type MultiSelectOption =
-	| MultiSelectOptionItem
+	| Pick<
+			MultiSelectItemProps<"div">,
+			"value" | "label" | "onSelect" | "onDeselect"
+	  > & {
+			disabled?: boolean;
+	  }
 	| MultiSelectOptionSeparator
 	| MultiSelectOptionGroup;
 
-export {
-	MultiSelect,
-	MultiSelectValue,
-	MultiSelectList,
-	MultiSelectItem,
-	MultiSelectGroup,
-	MultiSelectSeparator,
-	MultiSelectOptions,
+export const renderMultiSelectOptions = (list: MultiSelectOption[]) => {
+	return list.map((option) => {
+		if ("type" in option) {
+			if (option.type === "separator") {
+				return <MultiSelectSeparator />;
+			}
+			return null;
+		}
+
+		if ("children" in option) {
+			return (
+				<MultiSelectGroup heading={option.heading}>
+					{renderMultiSelectOptions(option.children)}
+				</MultiSelectGroup>
+			);
+		}
+
+		return (
+			<MultiSelectItem {...option}>
+				{option.label}
+			</MultiSelectItem>
+		);
+	});
 };
+
