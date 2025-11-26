@@ -144,92 +144,95 @@ function RouteComponent() {
 										<div class="space-y-3 p-4 relative">
 											<Separator />
 											<orderForm.AppField name={`items[${index}].itemName`}>
-											{(itemField) => (
-												<itemField.FieldSet class="w-full">
-													<itemField.Field>
-														<itemField.FieldLabel
-															for={`items[${index}].itemName`}
-														>
-															Item Name *
-														</itemField.FieldLabel>
-														<Input
-															name={`items[${index}].itemName`}
-															placeholder="Enter item name"
-															type="text"
-															value={
-																(itemField().state.value as
-																	| string
-																	| undefined) ?? ""
-															}
-															onBlur={itemField().handleBlur}
-															onInput={(e) =>
-																itemField().handleChange(e.currentTarget.value)
-															}
-															aria-invalid={
-																!!itemField().state.meta.errors.length &&
-																itemField().state.meta.isTouched
-															}
-														/>
-													</itemField.Field>
-
-													<itemField.FieldError />
-												</itemField.FieldSet>
-											)}
-										</orderForm.AppField>
-
-										<orderForm.AppField name={`items[${index}].quantity`}>
-											{(quantityField) => {
-												const min = 1;
-												const max = 50;
-												const step = 3;
-												const currentValue = quantityField().state.value;
-												const sliderValue = Array.isArray(currentValue)
-													? currentValue
-													: [currentValue || min];
-
-												return (
-													<quantityField.FieldSet class="w-full">
-														<quantityField.Field>
-															<quantityField.FieldLabel
-																class="flex justify-between items-center"
-																for={`items[${index}].quantity`}
+												{(itemField) => (
+													<itemField.FieldSet class="w-full">
+														<itemField.Field>
+															<itemField.FieldLabel
+																for={`items[${index}].itemName`}
 															>
-																Quantity *
-																<span class="text-sm text-muted-foreground">
-																	{sliderValue[0] || min} / {max}
-																</span>
-															</quantityField.FieldLabel>
-															<Slider
-																name={`items[${index}].quantity`}
-																minValue={min}
-																maxValue={max}
-																step={step}
-																value={sliderValue}
-																validationState={
-																	!!quantityField().state.meta.errors.length &&
-																	quantityField().state.meta.isTouched
-																		? "invalid"
-																		: "valid"
+																Item Name *
+															</itemField.FieldLabel>
+															<Input
+																name={`items[${index}].itemName`}
+																placeholder="Enter item name"
+																type="text"
+																value={
+																	(itemField().state.value as
+																		| string
+																		| undefined) ?? ""
 																}
-																onChange={(newValue) => {
-																	quantityField().handleChange(newValue[0]);
-																	quantityField().handleBlur();
-																}}
-															>
-																<SliderTrack>
-																	<SliderFill />
-																	<SliderThumb />
-																</SliderTrack>
-															</Slider>
-														</quantityField.Field>
-														<quantityField.FieldDescription class="py-1">
-															Adjust the quantity using the slider.
-														</quantityField.FieldDescription>
-														<quantityField.FieldError />
-													</quantityField.FieldSet>
-												);
-											}}
-										</orderForm.AppField>
+																onBlur={itemField().handleBlur}
+																onInput={(e) =>
+																	itemField().handleChange(
+																		e.currentTarget.value,
+																	)
+																}
+																aria-invalid={
+																	!!itemField().state.meta.errors.length &&
+																	itemField().state.meta.isTouched
+																}
+															/>
+														</itemField.Field>
+
+														<itemField.FieldError />
+													</itemField.FieldSet>
+												)}
+											</orderForm.AppField>
+
+											<orderForm.AppField name={`items[${index}].quantity`}>
+												{(quantityField) => {
+													const min = 1;
+													const max = 50;
+													const step = 3;
+													const currentValue = quantityField().state.value;
+													const sliderValue = Array.isArray(currentValue)
+														? currentValue
+														: [currentValue || min];
+
+													return (
+														<quantityField.FieldSet class="w-full">
+															<quantityField.Field>
+																<quantityField.FieldLabel
+																	class="flex justify-between items-center"
+																	for={`items[${index}].quantity`}
+																>
+																	Quantity *
+																	<span class="text-sm text-muted-foreground">
+																		{sliderValue[0] || min} / {max}
+																	</span>
+																</quantityField.FieldLabel>
+																<Slider
+																	name={`items[${index}].quantity`}
+																	minValue={min}
+																	maxValue={max}
+																	step={step}
+																	value={sliderValue}
+																	validationState={
+																		!!quantityField().state.meta.errors
+																			.length &&
+																		quantityField().state.meta.isTouched
+																			? "invalid"
+																			: "valid"
+																	}
+																	onChange={(newValue) => {
+																		quantityField().handleChange(newValue[0]);
+																		quantityField().handleBlur();
+																	}}
+																>
+																	<SliderTrack>
+																		<SliderFill />
+																		<SliderThumb />
+																	</SliderTrack>
+																</Slider>
+															</quantityField.Field>
+															<quantityField.FieldDescription class="py-1">
+																Adjust the quantity using the slider.
+															</quantityField.FieldDescription>
+															<quantityField.FieldError />
+														</quantityField.FieldSet>
+													);
+												}}
+											</orderForm.AppField>
 										</div>
 									)}
 								</Index>

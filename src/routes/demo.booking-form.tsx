@@ -101,7 +101,9 @@ function RouteComponent() {
 											type="text"
 											value={(field().state.value as string | undefined) ?? ""}
 											onBlur={field().handleBlur}
-											onInput={(e) => field().handleChange(e.currentTarget.value)}
+											onInput={(e) =>
+												field().handleChange(e.currentTarget.value)
+											}
 											aria-invalid={
 												!!field().state.meta.errors.length &&
 												field().state.meta.isTouched
@@ -126,7 +128,9 @@ function RouteComponent() {
 											type="text"
 											value={(field().state.value as string | undefined) ?? ""}
 											onBlur={field().handleBlur}
-											onInput={(e) => field().handleChange(e.currentTarget.value)}
+											onInput={(e) =>
+												field().handleChange(e.currentTarget.value)
+											}
 											aria-invalid={
 												!!field().state.meta.errors.length &&
 												field().state.meta.isTouched
@@ -238,8 +242,10 @@ function RouteComponent() {
 									>
 										<field.Field>
 											<SelectTrigger class="w-full">
-												<SelectValue<typeof options[number]>>
-													{(state) => state.selectedOption()?.label ?? "Select Category"}
+												<SelectValue<(typeof options)[number]>>
+													{(state) =>
+														state.selectedOption()?.label ?? "Select Category"
+													}
 												</SelectValue>
 											</SelectTrigger>
 										</field.Field>
@@ -279,7 +285,10 @@ function RouteComponent() {
 										>
 											<For each={options}>
 												{({ label, value }) => (
-													<RadioGroupItem value={value} class="flex items-center gap-x-2">
+													<RadioGroupItem
+														value={value}
+														class="flex items-center gap-x-2"
+													>
 														<RadioGroupItemInput />
 														<RadioGroupItemControl>
 															<RadioGroupItemIndicator />

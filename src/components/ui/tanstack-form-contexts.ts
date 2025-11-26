@@ -1,8 +1,8 @@
-import { createFormHookContexts } from "@tanstack/solid-form"
+import { createFormHookContexts } from "@tanstack/solid-form";
 
 export const {
-  fieldContext,
-  formContext,
-  useFieldContext: _useFieldContext,
-  useFormContext,
-} = createFormHookContexts()
+	fieldContext,
+	formContext,
+	useFieldContext: _useFieldContext,
+	useFormContext,
+} = createFormHookContexts();

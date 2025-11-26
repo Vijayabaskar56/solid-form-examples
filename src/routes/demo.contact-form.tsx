@@ -80,7 +80,9 @@ function RouteComponent() {
 											type="text"
 											value={(field().state.value as string | undefined) ?? ""}
 											onBlur={field().handleBlur}
-											onInput={(e) => field().handleChange(e.currentTarget.value)}
+											onInput={(e) =>
+												field().handleChange(e.currentTarget.value)
+											}
 											aria-invalid={
 												!!field().state.meta.errors.length &&
 												field().state.meta.isTouched
@@ -103,7 +105,9 @@ function RouteComponent() {
 											type="email"
 											value={(field().state.value as string | undefined) ?? ""}
 											onBlur={field().handleBlur}
-											onInput={(e) => field().handleChange(e.currentTarget.value)}
+											onInput={(e) =>
+												field().handleChange(e.currentTarget.value)
+											}
 											aria-invalid={
 												!!field().state.meta.errors.length &&
 												field().state.meta.isTouched
@@ -120,9 +124,7 @@ function RouteComponent() {
 						{(field) => (
 							<field.FieldSet class="w-full">
 								<field.Field>
-									<field.FieldLabel for={"message"}>
-										Message *
-									</field.FieldLabel>
+									<field.FieldLabel for={"message"}>Message *</field.FieldLabel>
 									<Textarea
 										placeholder="Enter your message"
 										value={(field().state.value as string | undefined) ?? ""}
@@ -158,7 +160,10 @@ function RouteComponent() {
 										<CheckboxControl />
 									</Checkbox>
 									<field.FieldContent>
-										<field.FieldLabel class="space-y-1 leading-none" for={"agree"}>
+										<field.FieldLabel
+											class="space-y-1 leading-none"
+											for={"agree"}
+										>
 											I agree to the terms and conditions *
 										</field.FieldLabel>
 

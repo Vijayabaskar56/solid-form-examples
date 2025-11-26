@@ -2,69 +2,67 @@
 // https://github.com/kobaltedev/kobalte/blob/main/packages/utils/src/events.ts
 // https://github.com/solidjs-community/solid-primitives/blob/main/packages/props/src/combineProps.ts
 
-import type { JSX } from "solid-js"
+import type { JSX } from "solid-js";
 
-import { defineConfig } from "cva"
-import { twMerge } from "tailwind-merge"
+import { defineConfig } from "cva";
+import { twMerge } from "tailwind-merge";
 // Function assertions
 export const isFunction = (value: unknown): value is Function =>
-  typeof value === "function"
+	typeof value === "function";
 
 /** Call a JSX.EventHandlerUnion with the event. */
 export const callHandler = <T, E extends Event>(
-  event: E & { currentTarget: T; target: Element },
-  handler: JSX.EventHandlerUnion<T, E> | undefined,
+	event: E & { currentTarget: T; target: Element },
+	handler: JSX.EventHandlerUnion<T, E> | undefined,
 ) => {
-  if (handler) {
-    if (isFunction(handler)) {
-      handler(event)
-    } else {
-      handler[0](handler[1], event)
-    }
-  }
+	if (handler) {
+		if (isFunction(handler)) {
+			handler(event);
+		} else {
+			handler[0](handler[1], event);
+		}
+	}
 
-  return event.defaultPrevented
-}
+	return event.defaultPrevented;
+};
 
-
-
-const extractCSSregex = /((?:--)?(?:\w+-?)+)\s*:\s*([^;]*)/g
+const extractCSSregex = /((?:--)?(?:\w+-?)+)\s*:\s*([^;]*)/g;
 
 export function stringStyleToObject(style: string): JSX.CSSProperties {
-  const object: Record<string, string> = {}
-  let match: RegExpExecArray | null
-  while ((match = extractCSSregex.exec(style))) {
-    object[match[1]] = match[2]
-  }
-  return object
+	const object: Record<string, string> = {};
+	let match: RegExpExecArray | null;
+	while ((match = extractCSSregex.exec(style))) {
+		object[match[1]] = match[2];
+	}
+	return object;
 }
 
-export function combineStyle(a: string, b: string): string
+export function combineStyle(a: string, b: string): string;
 export function combineStyle(
-  a: JSX.CSSProperties | undefined,
-  b: JSX.CSSProperties | undefined,
-): JSX.CSSProperties
+	a: JSX.CSSProperties | undefined,
+	b: JSX.CSSProperties | undefined,
+): JSX.CSSProperties;
 export function combineStyle(
-  a: JSX.CSSProperties | string | undefined,
-  b: JSX.CSSProperties | string | undefined,
-): JSX.CSSProperties
+	a: JSX.CSSProperties | string | undefined,
+	b: JSX.CSSProperties | string | undefined,
+): JSX.CSSProperties;
 export function combineStyle(
-  a: JSX.CSSProperties | string | undefined,
-  b: JSX.CSSProperties | string | undefined,
+	a: JSX.CSSProperties | string | undefined,
+	b: JSX.CSSProperties | string | undefined,
 ): JSX.CSSProperties | string {
-  if (typeof a === "string") {
-    if (typeof b === "string") return `${a};${b}`
+	if (typeof a === "string") {
+		if (typeof b === "string") return `${a};${b}`;
 
-    a = stringStyleToObject(a)
-  } else if (typeof b === "string") {
-    b = stringStyleToObject(b)
-  }
+		a = stringStyleToObject(a);
+	} else if (typeof b === "string") {
+		b = stringStyleToObject(b);
+	}
 
-  return { ...a, ...b }
+	return { ...a, ...b };
 }
 
 export const { cva, cx, compose } = defineConfig({
-  hooks: {
-    onComplete: (className) => twMerge(className),
-  },
-})
+	hooks: {
+		onComplete: (className) => twMerge(className),
+	},
+});

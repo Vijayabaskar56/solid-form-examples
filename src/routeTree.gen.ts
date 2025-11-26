@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DemoWithAllFieldsRouteImport } from './routes/demo.with-all-fields'
 import { Route as DemoWaitlistFormRouteImport } from './routes/demo.waitlist-form'
 import { Route as DemoSignUpFormRouteImport } from './routes/demo.sign-up-form'
 import { Route as DemoPurchaseOrderFormRouteImport } from './routes/demo.purchase-order-form'
@@ -20,6 +21,11 @@ import { Route as DemoBookingFormRouteImport } from './routes/demo.booking-form'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoWithAllFieldsRoute = DemoWithAllFieldsRouteImport.update({
+  id: '/demo/with-all-fields',
+  path: '/demo/with-all-fields',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoWaitlistFormRoute = DemoWaitlistFormRouteImport.update({
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
   '/demo/sign-up-form': typeof DemoSignUpFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
+  '/demo/with-all-fields': typeof DemoWithAllFieldsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
   '/demo/sign-up-form': typeof DemoSignUpFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
+  '/demo/with-all-fields': typeof DemoWithAllFieldsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
   '/demo/sign-up-form': typeof DemoSignUpFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
+  '/demo/with-all-fields': typeof DemoWithAllFieldsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/demo/purchase-order-form'
     | '/demo/sign-up-form'
     | '/demo/waitlist-form'
+    | '/demo/with-all-fields'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/demo/purchase-order-form'
     | '/demo/sign-up-form'
     | '/demo/waitlist-form'
+    | '/demo/with-all-fields'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/demo/purchase-order-form'
     | '/demo/sign-up-form'
     | '/demo/waitlist-form'
+    | '/demo/with-all-fields'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   DemoPurchaseOrderFormRoute: typeof DemoPurchaseOrderFormRoute
   DemoSignUpFormRoute: typeof DemoSignUpFormRoute
   DemoWaitlistFormRoute: typeof DemoWaitlistFormRoute
+  DemoWithAllFieldsRoute: typeof DemoWithAllFieldsRoute
 }
 
 declare module '@tanstack/solid-router' {
@@ -128,6 +141,13 @@ declare module '@tanstack/solid-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/with-all-fields': {
+      id: '/demo/with-all-fields'
+      path: '/demo/with-all-fields'
+      fullPath: '/demo/with-all-fields'
+      preLoaderRoute: typeof DemoWithAllFieldsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/waitlist-form': {
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoPurchaseOrderFormRoute: DemoPurchaseOrderFormRoute,
   DemoSignUpFormRoute: DemoSignUpFormRoute,
   DemoWaitlistFormRoute: DemoWaitlistFormRoute,
+  DemoWithAllFieldsRoute: DemoWithAllFieldsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

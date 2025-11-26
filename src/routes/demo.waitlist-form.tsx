@@ -15,7 +15,7 @@ export const Route = createFileRoute("/demo/waitlist-form")({
 });
 
 function RouteComponent() {
-	const waitlistForm = useAppForm(()=> ({
+	const waitlistForm = useAppForm(() => ({
 		defaultValues: {
 			email: "",
 		} as z.input<typeof waitlistFormSchema>,
