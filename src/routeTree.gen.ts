@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DemoWithAllFieldsRouteImport } from './routes/demo.with-all-fields'
 import { Route as DemoWaitlistFormRouteImport } from './routes/demo.waitlist-form'
+import { Route as DemoSurveyFormRouteImport } from './routes/demo.survey-form'
 import { Route as DemoSignUpFormRouteImport } from './routes/demo.sign-up-form'
 import { Route as DemoPurchaseOrderFormRouteImport } from './routes/demo.purchase-order-form'
 import { Route as DemoFeedbackFormRouteImport } from './routes/demo.feedback-form'
@@ -31,6 +32,11 @@ const DemoWithAllFieldsRoute = DemoWithAllFieldsRouteImport.update({
 const DemoWaitlistFormRoute = DemoWaitlistFormRouteImport.update({
   id: '/demo/waitlist-form',
   path: '/demo/waitlist-form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoSurveyFormRoute = DemoSurveyFormRouteImport.update({
+  id: '/demo/survey-form',
+  path: '/demo/survey-form',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoSignUpFormRoute = DemoSignUpFormRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/demo/feedback-form': typeof DemoFeedbackFormRoute
   '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
   '/demo/sign-up-form': typeof DemoSignUpFormRoute
+  '/demo/survey-form': typeof DemoSurveyFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
   '/demo/with-all-fields': typeof DemoWithAllFieldsRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/demo/feedback-form': typeof DemoFeedbackFormRoute
   '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
   '/demo/sign-up-form': typeof DemoSignUpFormRoute
+  '/demo/survey-form': typeof DemoSurveyFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
   '/demo/with-all-fields': typeof DemoWithAllFieldsRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/demo/feedback-form': typeof DemoFeedbackFormRoute
   '/demo/purchase-order-form': typeof DemoPurchaseOrderFormRoute
   '/demo/sign-up-form': typeof DemoSignUpFormRoute
+  '/demo/survey-form': typeof DemoSurveyFormRoute
   '/demo/waitlist-form': typeof DemoWaitlistFormRoute
   '/demo/with-all-fields': typeof DemoWithAllFieldsRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/demo/feedback-form'
     | '/demo/purchase-order-form'
     | '/demo/sign-up-form'
+    | '/demo/survey-form'
     | '/demo/waitlist-form'
     | '/demo/with-all-fields'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/demo/feedback-form'
     | '/demo/purchase-order-form'
     | '/demo/sign-up-form'
+    | '/demo/survey-form'
     | '/demo/waitlist-form'
     | '/demo/with-all-fields'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/demo/feedback-form'
     | '/demo/purchase-order-form'
     | '/demo/sign-up-form'
+    | '/demo/survey-form'
     | '/demo/waitlist-form'
     | '/demo/with-all-fields'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   DemoFeedbackFormRoute: typeof DemoFeedbackFormRoute
   DemoPurchaseOrderFormRoute: typeof DemoPurchaseOrderFormRoute
   DemoSignUpFormRoute: typeof DemoSignUpFormRoute
+  DemoSurveyFormRoute: typeof DemoSurveyFormRoute
   DemoWaitlistFormRoute: typeof DemoWaitlistFormRoute
   DemoWithAllFieldsRoute: typeof DemoWithAllFieldsRoute
 }
@@ -155,6 +168,13 @@ declare module '@tanstack/solid-router' {
       path: '/demo/waitlist-form'
       fullPath: '/demo/waitlist-form'
       preLoaderRoute: typeof DemoWaitlistFormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/survey-form': {
+      id: '/demo/survey-form'
+      path: '/demo/survey-form'
+      fullPath: '/demo/survey-form'
+      preLoaderRoute: typeof DemoSurveyFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/sign-up-form': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoFeedbackFormRoute: DemoFeedbackFormRoute,
   DemoPurchaseOrderFormRoute: DemoPurchaseOrderFormRoute,
   DemoSignUpFormRoute: DemoSignUpFormRoute,
+  DemoSurveyFormRoute: DemoSurveyFormRoute,
   DemoWaitlistFormRoute: DemoWaitlistFormRoute,
   DemoWithAllFieldsRoute: DemoWithAllFieldsRoute,
 }

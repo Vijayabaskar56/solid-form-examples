@@ -239,7 +239,7 @@ function StepButton<T extends ValidComponent = "button">(
 	);
 }
 
-const { useAppForm, withForm } = createFormHook({
+const { useAppForm, withForm , withFieldGroup } = createFormHook({
 	fieldContext,
 	formContext,
 	fieldComponents: {
@@ -267,4 +267,4 @@ const { useAppForm, withForm } = createFormHook({
 	},
 });
 
-export { useAppForm, useFieldContext, useFormContext, withForm };
+export { useAppForm, useFieldContext, useFormContext, withForm ,withFieldGroup};
