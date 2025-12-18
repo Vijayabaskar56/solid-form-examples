@@ -690,7 +690,6 @@ function RouteComponent() {
 								{ label: "Nuxt", value: "nuxt" },
 								{ label: "Remix", value: "remix" },
 							];
-							const currentValue = (field().state.value as string[]) || [];
 							return (
 								<field.FieldSet class="w-full">
 									<field.Field>
@@ -698,10 +697,9 @@ function RouteComponent() {
 											Select Frameworks *
 										</field.FieldLabel>
 										<MultiSelect
-											value={currentValue}
+											value={(field().state.value as string[]) || []}
 											onValueChange={(values) => {
 												field().handleChange(values);
-												field().handleBlur();
 											}}
                       sameWidth={true}
 											maxCount={5}
